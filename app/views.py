@@ -11,19 +11,21 @@ from app import app
 @app.route('/')
 def index():
  
-  # we are getting the info provied by flask for the conneciton 
-  # ref http://werkzeug.pocoo.org/docs/wrappers/#werkzeug.wrappers.BaseRequest.remote_addr
 
   # get remote ip
-  ip = request.environ['REMOTE_ADDR']
+  # both work the one we are using gets a list
+  #ip = request.environ['REMOTE_ADDR']
+  ip = request.access_route[-1]
   head = request.headers
   geo_data = __get_ip_info(ip)
   if not geo_data.status_code == 200: return abort(r.status_code)
-  if geo_data.text:
-    print geo_data.json()
+  
+  call = 'nslookup '+ip+' 192.168.1.22 |grep "name = "'
+  output = os.popen(call).read()
+  name = re.sub(r'^.*name = ','',output)
 
   # retirm template with info 
-  return render_template("index.html", lookup_ip=ip, headers=head, geo_data=geo_data.json())
+  return render_template("index.html", lookup_ip=ip, headers=head, geo_data=geo_data.json(),name=name)
 
 # Get Host info
 ##########################
