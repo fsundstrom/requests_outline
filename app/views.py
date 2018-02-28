@@ -8,7 +8,7 @@ from app import app
 
 # create index page
 #########################
-@app.route('/')
+@app.route('/', methods = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'])
 def index():
  
 
@@ -17,6 +17,24 @@ def index():
   #ip = request.environ['REMOTE_ADDR']
   ip = request.access_route[-1]
   head = request.headers
+
+  # request method
+  method = ""
+  if request.method == 'GET':
+        method = "GET"
+
+  elif request.method == 'POST':
+        method = "POST"
+
+  elif request.method == 'PATCH':
+        method = "PACTH"
+
+  elif request.method == 'PUT':
+        method = "PUT"
+
+  elif request.method == 'DELETE':
+        method = "DELETE"
+
   geo_data = __get_ip_info(ip)
   if not geo_data.status_code == 200: return abort(r.status_code)
   
@@ -24,8 +42,13 @@ def index():
   output = os.popen(call).read()
   name = re.sub(r'^.*name = ','',output)
 
-  # retirm template with info 
-  return render_template("index.html", lookup_ip=ip, headers=head, geo_data=geo_data.json(),name=name)
+  call = 'jwhois '+ip+' |grep -v "Comment"|grep -v "^#"'
+  output = os.popen(call).read()
+  whois= output.split("\n")
+  # retirm template with info
+  return render_template("index.html", lookup_ip=ip, method=method, headers=head, geo_data=geo_data.json(),name=name,whois=whois)
+
+
 
 # Get Host info
 ##########################
